@@ -22,9 +22,9 @@ namespace Gra2D
 
         public int HP { get; set; } = 100;
         public int Stamina { get; set; } = 50;
-        public int Drewno { get; set; }
-        public int Kamien { get; set; }
-        public int Zloto { get; set; }
+        public int Drewno { get; set; } = 0;
+        public int Kamien { get; set; } = 0;
+        public int Zloto { get; set; } = 0;
         public int AktualnyPoziom { get; set; } = 1;
 
         public int WymaganeDrewno => 10 + (AktualnyPoziom * 2);
@@ -33,6 +33,10 @@ namespace Gra2D
 
         private Random rand = new Random();
         private DispatcherTimer gameTimer;
+
+        // Kolory statystyk
+        private readonly SolidColorBrush domyslnyKolor = Brushes.White;
+        private readonly SolidColorBrush osiagnietyLimitKolor = Brushes.LimeGreen;
 
         public MainWindow()
         {
@@ -202,9 +206,19 @@ namespace Gra2D
         {
             EtykietaHP.Content = $"HP: {HP}/100";
             EtykietaStamina.Content = $"Stamina: {Stamina}/50";
+
+            // Drewno
             EtykietaDrewna.Content = $"Drewno: {Drewno}/{WymaganeDrewno}";
+            EtykietaDrewna.Foreground = Drewno >= WymaganeDrewno ? osiagnietyLimitKolor : domyslnyKolor;
+
+            // Kamień
             EtykietaKamien.Content = $"Kamień: {Kamien}/{WymaganyKamien}";
+            EtykietaKamien.Foreground = Kamien >= WymaganyKamien ? osiagnietyLimitKolor : domyslnyKolor;
+
+            // Złoto
             EtykietaZloto.Content = $"Złoto: {Zloto}/{WymaganeZloto}";
+            EtykietaZloto.Foreground = Zloto >= WymaganeZloto ? osiagnietyLimitKolor : domyslnyKolor;
+
             EtykietaPoziom.Content = $"Poziom: {AktualnyPoziom}";
         }
 
@@ -226,11 +240,9 @@ namespace Gra2D
                 case Key.Space: Atakuj(); return;
             }
 
-            if (nowyX >= 0 && nowyX < szerokoscMapy &&
-                nowyY >= 0 && nowyY < wysokoscMapy &&
-                Stamina >= 5)
+            if (nowyX >= 0 && nowyX < szerokoscMapy && nowyY >= 0 && nowyY < wysokoscMapy)
             {
-                if (mapa[nowyY, nowyX] != SKALA && mapa[nowyY, nowyX] != RZEKA)
+                if (mapa[nowyY, nowyX] != SKALA && mapa[nowyY, nowyX] != RZEKA && Stamina >= 5)
                 {
                     Stamina -= 5;
                     pozycjaGraczaX = nowyX;
@@ -242,29 +254,38 @@ namespace Gra2D
 
         private void ZbierzSurowiec()
         {
+            // Sprawdź czy wszystkie wymagania są spełnione
+            if (Drewno >= WymaganeDrewno && Kamien >= WymaganyKamien && Zloto >= WymaganeZloto)
+            {
+                NowyPoziom();
+                return;
+            }
+
             int teren = mapa[pozycjaGraczaY, pozycjaGraczaX];
+
             switch (teren)
             {
-                case LAS:
+                case LAS when Drewno < WymaganeDrewno:
                     Drewno++;
                     mapa[pozycjaGraczaY, pozycjaGraczaX] = LAKA;
                     tablicaTerenu[pozycjaGraczaY, pozycjaGraczaX].Source = obrazyTerenu[LAKA];
                     break;
-                case GORY:
+
+                case GORY when Zloto < WymaganeZloto:
                     Zloto++;
                     mapa[pozycjaGraczaY, pozycjaGraczaX] = LAKA;
                     tablicaTerenu[pozycjaGraczaY, pozycjaGraczaX].Source = obrazyTerenu[LAKA];
                     break;
-                case SKALA:
+
+                case SKALA when Kamien < WymaganyKamien:
                     Kamien++;
                     break;
             }
+
             Stamina = Math.Min(Stamina + 3, 50);
             AktualizujStatystyki();
 
-            if (Drewno >= WymaganeDrewno &&
-                Kamien >= WymaganyKamien &&
-                Zloto >= WymaganeZloto)
+            if (Drewno >= WymaganeDrewno && Kamien >= WymaganyKamien && Zloto >= WymaganeZloto)
             {
                 NowyPoziom();
             }
@@ -284,9 +305,7 @@ namespace Gra2D
                     int x = pozycjaGraczaX + dx;
                     int y = pozycjaGraczaY + dy;
 
-                    if (x >= 0 && x < szerokoscMapy &&
-                        y >= 0 && y < wysokoscMapy &&
-                        mapa[y, x] == SKALA)
+                    if (x >= 0 && x < szerokoscMapy && y >= 0 && y < wysokoscMapy && mapa[y, x] == SKALA)
                     {
                         mapa[y, x] = LAKA;
                         tablicaTerenu[y, x].Source = obrazyTerenu[LAKA];
