@@ -6,13 +6,9 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         KeyDown="OknoGlowne_KeyDown"
-        Background="#FF222222">
-    <Window.Resources>
-        <SolidColorBrush x:Key="DomyslnyKolor" Color="White"/>
-        <SolidColorBrush x:Key="OsiagnietyLimitKolor" Color="LimeGreen"/>
-    </Window.Resources>
-
-    <Grid>
+        Background="#FF222222"
+        x:Name="MainWindowcos">
+    <Grid x:Name="MainGridmap">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -21,11 +17,10 @@
 
         <!-- Statystyki -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Background="#FF333333" Margin="5">
-            <Label x:Name="EtykietaHP" Content="HP: 100/100" Margin="5" Foreground="Red"/>
             <Label x:Name="EtykietaStamina" Content="Stamina: 50/50" Margin="5" Foreground="Blue"/>
-            <Label x:Name="EtykietaDrewna" Content="Drewno: 0/10" Margin="5" Foreground="{StaticResource DomyslnyKolor}"/>
-            <Label x:Name="EtykietaKamien" Content="Kamień: 0/5" Margin="5" Foreground="{StaticResource DomyslnyKolor}"/>
-            <Label x:Name="EtykietaZloto" Content="Złoto: 0/3" Margin="5" Foreground="{StaticResource DomyslnyKolor}"/>
+            <Label x:Name="EtykietaDrewna" Content="Drewno: 0/10" Margin="5" Foreground="White"/>
+            <Label x:Name="EtykietaKamien" Content="Kamień: 0/5" Margin="5" Foreground="White"/>
+            <Label x:Name="EtykietaZloto" Content="Złoto: 0/3" Margin="5" Foreground="White"/>
             <Label x:Name="EtykietaPoziom" Content="Poziom: 1" Margin="5" Foreground="Yellow"/>
         </StackPanel>
 

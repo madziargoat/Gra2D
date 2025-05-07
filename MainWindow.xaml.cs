@@ -5,6 +5,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 
 namespace Gra2D
 {
@@ -20,7 +22,6 @@ namespace Gra2D
         private Image obrazGracza;
         private int pozycjaGraczaX = 10, pozycjaGraczaY = 10;
 
-        public int HP { get; set; } = 100;
         public int Stamina { get; set; } = 50;
         public int Drewno { get; set; } = 0;
         public int Kamien { get; set; } = 0;
@@ -33,8 +34,6 @@ namespace Gra2D
 
         private Random rand = new Random();
         private DispatcherTimer gameTimer;
-
-        // Kolory statystyk
         private readonly SolidColorBrush domyslnyKolor = Brushes.White;
         private readonly SolidColorBrush osiagnietyLimitKolor = Brushes.LimeGreen;
 
@@ -58,21 +57,62 @@ namespace Gra2D
             szerokoscMapy = 20 + (AktualnyPoziom * 2);
             wysokoscMapy = 20 + (AktualnyPoziom * 2);
 
-            // Zerowanie statystyk
-            HP = 100;
             Stamina = 50;
             Drewno = 0;
             Kamien = 0;
             Zloto = 0;
 
+            PokazKonfetti();
             WygenerujMape();
             AktualizujStatystyki();
+        }
 
-            MessageBox.Show(
-                $"Poziom {AktualnyPoziom}!\n\nWymagania:\n" +
-                $"Drewno: {WymaganeDrewno}\nKamień: {WymaganyKamien}\nZłoto: {WymaganeZloto}",
-                "Nowy poziom",
-                MessageBoxButton.OK);
+        private void PokazKonfetti()
+        {
+            var konfettiCanvas = new Canvas();
+            Grid.SetRowSpan(konfettiCanvas, 3);
+            MainGridmap.Children.Add(konfettiCanvas);
+
+            for (int i = 0; i < 50; i++)
+            {
+                var element = new Ellipse
+                {
+                    Width = 10,
+                    Height = 10,
+                    Fill = new SolidColorBrush(Color.FromRgb(
+                        (byte)rand.Next(256),
+                        (byte)rand.Next(256),
+                        (byte)rand.Next(256))),
+                    Opacity = 0.7
+                };
+
+                Canvas.SetLeft(element, rand.Next((int)ActualWidth));
+                Canvas.SetTop(element, -10);
+                konfettiCanvas.Children.Add(element);
+
+                var animX = new DoubleAnimation
+                {
+                    By = rand.Next(-50, 50),
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+
+                var animY = new DoubleAnimation
+                {
+                    To = ActualHeight + 10,
+                    Duration = TimeSpan.FromSeconds(3)
+                };
+
+                element.BeginAnimation(Canvas.LeftProperty, animX);
+                element.BeginAnimation(Canvas.TopProperty, animY);
+            }
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+            timer.Tick += (s, e) =>
+            {
+                MainGridmap.Children.Remove(konfettiCanvas);
+                timer.Stop();
+            };
+            timer.Start();
         }
 
         private void WczytajObrazy()
@@ -137,7 +177,6 @@ namespace Gra2D
                 }
             }
 
-            // Gwarantowane surowce
             for (int i = 0; i < 15 + (AktualnyPoziom * 3); i++) UmiescSurowiec(LAS, SKALA, RZEKA);
             for (int i = 0; i < 10 + (AktualnyPoziom * 2); i++) UmiescSurowiec(SKALA, SKALA, RZEKA);
             for (int i = 0; i < 3 + AktualnyPoziom; i++) UmiescSurowiec(GORY, SKALA, RZEKA);
@@ -204,18 +243,15 @@ namespace Gra2D
 
         private void AktualizujStatystyki()
         {
-            EtykietaHP.Content = $"HP: {HP}/100";
+            
             EtykietaStamina.Content = $"Stamina: {Stamina}/50";
 
-            // Drewno
             EtykietaDrewna.Content = $"Drewno: {Drewno}/{WymaganeDrewno}";
             EtykietaDrewna.Foreground = Drewno >= WymaganeDrewno ? osiagnietyLimitKolor : domyslnyKolor;
 
-            // Kamień
             EtykietaKamien.Content = $"Kamień: {Kamien}/{WymaganyKamien}";
             EtykietaKamien.Foreground = Kamien >= WymaganyKamien ? osiagnietyLimitKolor : domyslnyKolor;
 
-            // Złoto
             EtykietaZloto.Content = $"Złoto: {Zloto}/{WymaganeZloto}";
             EtykietaZloto.Foreground = Zloto >= WymaganeZloto ? osiagnietyLimitKolor : domyslnyKolor;
 
@@ -254,7 +290,6 @@ namespace Gra2D
 
         private void ZbierzSurowiec()
         {
-            // Sprawdź czy wszystkie wymagania są spełnione
             if (Drewno >= WymaganeDrewno && Kamien >= WymaganyKamien && Zloto >= WymaganeZloto)
             {
                 NowyPoziom();

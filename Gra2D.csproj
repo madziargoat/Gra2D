@@ -9,10 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="bagno.png" />
+    <None Remove="gory.png" />
     <None Remove="gracz.png" />
     <None Remove="laka.png" />
     <None Remove="las.png" />
     <None Remove="skala.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bagno.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="gory.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
