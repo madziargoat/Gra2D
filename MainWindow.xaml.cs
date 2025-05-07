@@ -12,28 +12,33 @@ namespace Gra2D
 {
     public partial class MainWindow : Window
     {
+        // Stałe określające typy terenu
         public const int LAS = 1, LAKA = 2, SKALA = 3, BAGNO = 4, RZEKA = 5, GORY = 6;
-        private const int RozmiarSegmentu = 32;
+        private const int RozmiarSegmentu = 32; // Rozmiar pojedynczego kafelka mapy w pikselach
 
-        private int[,] mapa;
+        // Zmienne przechowujące stan gry
+        private int[,] mapa; // Dwuwymiarowa tablica reprezentująca mapę
         private int szerokoscMapy = 20, wysokoscMapy = 20;
         private Image[,] tablicaTerenu;
-        private ImageSource[] obrazyTerenu = new ImageSource[7];
+        private ImageSource[] obrazyTerenu = new ImageSource[7]; // Ładowane tekstury terenu
         private Image obrazGracza;
-        private int pozycjaGraczaX = 10, pozycjaGraczaY = 10;
+        private int pozycjaGraczaX = 10, pozycjaGraczaY = 10; // Aktualna pozycja gracza
 
+        // Statystyki gracza
         public int Stamina { get; set; } = 50;
         public int Drewno { get; set; } = 0;
         public int Kamien { get; set; } = 0;
         public int Zloto { get; set; } = 0;
         public int AktualnyPoziom { get; set; } = 1;
 
+        // Wymagane ilości surowców do ukończenia poziomu
         public int WymaganeDrewno => 10 + (AktualnyPoziom * 2);
         public int WymaganyKamien => 5 + AktualnyPoziom;
         public int WymaganeZloto => 3 + AktualnyPoziom;
 
+        // Pomocnicze obiekty
         private Random rand = new Random();
-        private DispatcherTimer gameTimer;
+        private DispatcherTimer gameTimer; // Timer aktualizujący grę
         private readonly SolidColorBrush domyslnyKolor = Brushes.White;
         private readonly SolidColorBrush osiagnietyLimitKolor = Brushes.LimeGreen;
 
@@ -53,10 +58,12 @@ namespace Gra2D
 
         private void NowyPoziom()
         {
+            // Zwiększanie rozmiaru mapy wraz z poziomem
             AktualnyPoziom++;
             szerokoscMapy = 20 + (AktualnyPoziom * 2);
             wysokoscMapy = 20 + (AktualnyPoziom * 2);
 
+            // Reset statystyk gracza
             Stamina = 50;
             Drewno = 0;
             Kamien = 0;
@@ -73,6 +80,7 @@ namespace Gra2D
             Grid.SetRowSpan(konfettiCanvas, 3);
             MainGridmap.Children.Add(konfettiCanvas);
 
+            // Generuje 50 elementów konfetti
             for (int i = 0; i < 50; i++)
             {
                 var element = new Ellipse
@@ -90,6 +98,7 @@ namespace Gra2D
                 Canvas.SetTop(element, -10);
                 konfettiCanvas.Children.Add(element);
 
+                // Animacje spadających elementów
                 var animX = new DoubleAnimation
                 {
                     By = rand.Next(-50, 50),
@@ -105,7 +114,7 @@ namespace Gra2D
                 element.BeginAnimation(Canvas.LeftProperty, animX);
                 element.BeginAnimation(Canvas.TopProperty, animY);
             }
-
+            // Timer usuwający konfetti po 3 sekundach
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
             timer.Tick += (s, e) =>
             {
@@ -117,6 +126,7 @@ namespace Gra2D
 
         private void WczytajObrazy()
         {
+            // Ładuje obrazy terenu z plików
             string[] pliki = { "", "las.png", "laka.png", "skala.png", "bagno.png", "rzeka.png", "gory.png" };
             for (int i = 1; i <= 6; i++)
             {
@@ -126,6 +136,7 @@ namespace Gra2D
                 }
                 catch
                 {
+                    // Awaryjne generowanie niebieskiego kafelka jeśli brak pliku
                     var bmp = new WriteableBitmap(32, 32, 96, 96, PixelFormats.Bgr32, null);
                     byte[] pixels = new byte[32 * 32 * 4];
                     for (int j = 0; j < pixels.Length; j += 4)
@@ -139,7 +150,7 @@ namespace Gra2D
                 }
             }
         }
-
+        // Tworzenie obrazka gracza
         private void StworzGracza()
         {
             obrazGracza = new Image
@@ -149,7 +160,7 @@ namespace Gra2D
                 Source = new BitmapImage(new Uri("gracz.png", UriKind.Relative))
             };
         }
-
+        // Generowanie losowej mapy
         private void WygenerujMape()
         {
             mapa = new int[wysokoscMapy, szerokoscMapy];
@@ -168,6 +179,7 @@ namespace Gra2D
             {
                 for (int x = 0; x < szerokoscMapy; x++)
                 {
+                    //umieszczenie surowcow
                     int los = rand.Next(100);
                     if (los < 40) mapa[y, x] = LAKA;
                     else if (los < 60) mapa[y, x] = LAS;
@@ -203,7 +215,7 @@ namespace Gra2D
             SiatkaMapy.Children.Add(obrazGracza);
             AktualizujPozycjeGracza();
         }
-
+        // Umieszczenie surowca na mapie, unikając niedozwolonych terenów
         private void UmiescSurowiec(int surowiec, params int[] niedozwolone)
         {
             int x, y, proba = 0;
@@ -216,7 +228,7 @@ namespace Gra2D
 
             mapa[y, x] = surowiec;
         }
-
+        // Aktualizacja pozycji gracza na mapie
         private void AktualizujPozycjeGracza()
         {
             if (pozycjaGraczaY >= 0 && pozycjaGraczaY < wysokoscMapy &&
@@ -226,7 +238,7 @@ namespace Gra2D
                 Grid.SetColumn(obrazGracza, pozycjaGraczaX);
             }
         }
-
+        // Start timera do odnowienia staminy
         private void StartTimer()
         {
             gameTimer = new DispatcherTimer
@@ -240,7 +252,7 @@ namespace Gra2D
             };
             gameTimer.Start();
         }
-
+        // Aktualizacja wyświetlanych statystyk
         private void AktualizujStatystyki()
         {
             
@@ -257,7 +269,7 @@ namespace Gra2D
 
             EtykietaPoziom.Content = $"Poziom: {AktualnyPoziom}";
         }
-
+        // Obsługa klawiatury - poruszanie graczem, zbieranie surowców, atak
         private void OknoGlowne_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -287,7 +299,7 @@ namespace Gra2D
                 }
             }
         }
-
+        // Zbieranie surowców z aktualnej pozycji
         private void ZbierzSurowiec()
         {
             if (Drewno >= WymaganeDrewno && Kamien >= WymaganyKamien && Zloto >= WymaganeZloto)
@@ -325,7 +337,7 @@ namespace Gra2D
                 NowyPoziom();
             }
         }
-
+        // Atak - niszczenie skał wokół gracza
         private void Atakuj()
         {
             if (Stamina < 15) return;
